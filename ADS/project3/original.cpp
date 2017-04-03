@@ -1,10 +1,10 @@
-#include <original.h>
+#include "original.h"
 
 void Original::decrease(int index, int distance) {
 	int queueIndex = identifier[index];
 	HeapNode *tmpNode = nullptr;
 	int tmpIndex = 0;
-	while (queueIndex > 0 && queue[(queueIndex - 1) / 2] > queue[queueIndex]) {
+	while (queueIndex > 0 && queue[(queueIndex - 1) / 2]->distance > queue[queueIndex]->distance) {
 		tmpIndex = identifier[index];
 		identifier[index] = identifier[queue[(queueIndex - 1) / 2]->index];
 		identifier[queue[(queueIndex - 1) / 2]->index] = tmpIndex;

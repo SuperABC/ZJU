@@ -1,4 +1,4 @@
-#include <heap.h>
+#include "heap.h"
 
 Heap::Heap() {
 	for (int i = 0; i < MAX_SIZE; i++) {
