@@ -6,10 +6,9 @@
 class Original : public Heap {
 public:
 	Original(int num) { nodeNum = num; tmpNum = num; };
-	~Original() {};
+	virtual ~Original() {};
 	virtual int get();
 	virtual void decrease(int index, int distance);
 };
-
 
 #endif 
