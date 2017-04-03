@@ -19,7 +19,7 @@ public:
 protected:
 	HeapNode *queue[MAX_SIZE];
 	int identifier[MAX_SIZE];
-	int nodeNum;
+	int nodeNum, tmpNum;
 };
 
 #endif
