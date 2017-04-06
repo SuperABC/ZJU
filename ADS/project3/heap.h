@@ -89,7 +89,7 @@ class MinHeap {
 	private:
 		// Number of the elements
 		unsigned n_element;
-}
+};
 
 struct HeapNode {
 	int index;
