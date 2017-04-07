@@ -1,23 +1,22 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
-#include "bin_heap.h"
+#include<iostream>
+#include<string>
+#include<vector>
+#include<fstream>
+#include"original.h"
 
 #define maxVetexNum 300000
 #define infinite 1e13
 
 using namespace std;
 
-class AdjListNode {
+struct AdjListNode {
 public:
 	AdjListNode(int index) :vertexIndex(index), nextAdjNodePtr(nullptr) {}
 	int vertexIndex;
 	double passCost;
 	AdjListNode* nextAdjNodePtr;
 };
-
-class GraphNode {
+struct GraphNode {
 public:
 	GraphNode() : isKnown(false), adjList(nullptr) ,lastIndex(-1) {}
 	~GraphNode() {
@@ -54,8 +53,7 @@ private:
 class Graph {
 public:
 	Graph();
-	void initialGraph() {
-	}
+	void initialGraph() {}
 	void dijkstra(int targetIndex);
 	vector<GraphNode> nodes;
 	int nodesNum;
@@ -63,8 +61,19 @@ private:
 	void printPass(int currentIndex, int targetIndex);
 };
 
+Graph::Graph() : nodes(maxVetexNum) {
+	ifstream inputFile("roads.txt");
+	int passNum, index1, index2;
+	double cost;
+	inputFile >> nodesNum >> passNum;
+	for (int i(0); i != passNum; ++i) {
+		inputFile >> index1 >> index2 >> cost;
+		nodes[index1 - 1].insertAdjNode(index2 - 1, cost);
+	}
+	return;
+}
 void Graph::dijkstra(int targetIndex) {
-	Heap *heap = new Original(nodesNum);
+	Heap<HeapNode> *heap = new Original(nodesNum);
 	for (int i(0); i != nodesNum; ++i) {
 		nodes[i].cost = infinite;
 		nodes[i].lastIndex = -1;
@@ -76,10 +85,8 @@ void Graph::dijkstra(int targetIndex) {
 	heap->decrease(targetIndex, 0);
 	int currentIndex, nextIndex;
 	while (true) {
-		currentIndex = heap->get();
-		if (currentIndex < 0) {
-			break;
-		}
+		currentIndex = heap->get().index;
+		if (currentIndex < 0)break;
 		nodes[currentIndex].isKnown = true;
 		AdjListNode* nextNodePtr = nodes[currentIndex].adjList;
 		while (nextNodePtr != nullptr) {
@@ -107,7 +114,6 @@ void Graph::dijkstra(int targetIndex) {
 	}
 	delete heap;
 }
-
 void Graph::printPass(int currentIndex, int targetIndex) {
 	if (nodes[currentIndex].lastIndex == -1)return;
 	if (currentIndex == targetIndex) {
@@ -116,18 +122,6 @@ void Graph::printPass(int currentIndex, int targetIndex) {
 	}
 	printPass(nodes[currentIndex].lastIndex, targetIndex);
 	cout << " -> " << currentIndex;
-	return;
-}
-
-Graph::Graph() : nodes(maxVetexNum) {
-	ifstream inputFile("roads.txt");
-	int passNum, index1, index2;
-	double cost;
-	inputFile >> nodesNum >> passNum;
-	for (int i(0); i != passNum; ++i) {
-		inputFile >> index1 >> index2 >> cost;
-		nodes[index1 - 1].insertAdjNode(index2 - 1, cost);
-	}
 	return;
 }
 
