@@ -44,15 +44,14 @@ BinMinHeap<Type>::BinMinHeap(const MinHeap<Type> &src)
     n_element = 0;
     if(src.heap_type() == BIN_HEAP)
     {
-        BinMinHeap<Type> *ptr = &src;
-        this->array = src->array;
-        this->n_element = src->n_element;
+        this->array = ((BinMinHeap<Type>&)src).array;
+        this->n_element = ((BinMinHeap<Type>&)src).n_element;
     }
     else
     {
         BinMinHeap<Type> *temp_heap = heapify(src.get_raw());
         this->array = temp_heap->array;
-        this->n_element = src->n_element;
+        this->n_element = src.n_element;
         delete temp_heap;
     }
     return;
@@ -63,12 +62,12 @@ BinMinHeap<Type>::~BinMinHeap()
 {return;}
 
 template<class Type>
-MinHeap<Type>& operator=(MinHeap<Type> &src)
+MinHeap<Type>& BinMinHeap<Type>::operator=(MinHeap<Type> &src)
 {
     if(src.heap_type() == BIN_HEAP)
     {
-        this->array = src.array;
-        this->n_element = src.n_element;
+        this->array = ((BinMinHeap<Type>&)src).array;
+        this->n_element = ((BinMinHeap<Type>&)src).n_element;
     }
     else
     {
