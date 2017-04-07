@@ -3,8 +3,6 @@
 
 #include "heap.h"
 
-#define TEST_HEAP
-
 #ifdef TEST_HEAP
 #include <iostream>
 #endif
