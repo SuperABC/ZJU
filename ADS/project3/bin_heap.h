@@ -8,9 +8,9 @@ class BinMinHeap: public MinHeap<Type> {
     using MinHeap<Type>::n_element;
     public:
         BinMinHeap();
-        BinMinHeap(const MinHeap<Type> &src);
+        BinMinHeap(const MinHeap<Type>&);
         ~BinMinHeap();
-        MinHeap<Type>& operator=(MinHeap<Type> &src);
+        MinHeap<Type>& operator=(MinHeap<Type>&);
 
         Type& get_top();
         Type& push(const Type&);
@@ -60,6 +60,25 @@ BinMinHeap<Type>::BinMinHeap(const MinHeap<Type> &src)
 template<class Type>
 BinMinHeap<Type>::~BinMinHeap()
 {return;}
+
+template<class Type>
+MinHeap<Type>& operator=(MinHeap<Type> &src)
+{
+    if(src.heap_type() == BIN_HEAP)
+    {
+        this->array = src.array;
+        this->n_element = src.n_element;
+    }
+    else
+    {
+        std::vector<Type> source_raw = src.get_raw();
+        BinMinHeap *temp = heapify(source_raw);
+        this->array = temp->array;
+        this->n_element = temp->n_element;
+        delete temp;
+    }
+    return *this;
+}
 
 template<class Type>
 Type& BinMinHeap<Type>::get_top()
