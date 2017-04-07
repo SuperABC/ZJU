@@ -1,10 +1,11 @@
-#include "heap.h"
-
 #ifndef BIN_MIN_HEAP_H
 #define BIN_MIN_HEAP_H
 
+#include "heap.h"
+
 template<class Type>
-class BinMinHeap: public MinHeap {
+class BinMinHeap: public MinHeap<Type> {
+    using MinHeap<Type>::n_element;
     public:
         BinMinHeap();
         BinMinHeap(const MinHeap<Type> &src);
@@ -18,7 +19,7 @@ class BinMinHeap: public MinHeap {
         MinHeap<Type>& merge(const MinHeap<Type>&) const;
         MinHeap<Type>& meld(const MinHeap<Type>&);
         HeapType heap_type() {return BIN_HEAP;}
-        std::vector<Type> get_raw();
+        std::vector<Type> get_raw() const;
         static BinMinHeap<Type>* heapify(const std::vector<Type>&);
     private:
         // Internal storage
@@ -79,23 +80,23 @@ Type& BinMinHeap<Type>::pop()
 {
     if(this->size() == 1)
     {
-        Type temp = array[1];
+        Type *temp = new Type(array[1]);
         array.pop_back();
         n_element--;
-        return temp;
+        return *temp;
     }
     if(this->size() == 0)
     {
-        Type temp;
-        return temp;
+        Type *temp = new Type;
+        return *temp;
     }
     unsigned len = array.size();
-    Type result = array[1];
+    Type *result = new Type(array[1]);
     array[1] = array[len];
     array.pop_back();
     percolate_down(1);
     n_element--;
-    return result;
+    return *result;
 }
 
 template<class Type>
@@ -111,7 +112,7 @@ MinHeap<Type>& BinMinHeap<Type>::merge(const MinHeap<Type>& another_heap) const
 {
     std::vector<Type> raw_vector;
     std::vector<Type> this_raw = this->get_raw();
-    std::vector<Type> another_raw = another_heap->get_raw();
+    std::vector<Type> another_raw = another_heap.get_raw();
     raw_vector.insert(raw_vector.begin(),
         this_raw.begin(), this_raw.end());
     raw_vector.insert(raw_vector.end(),
@@ -124,7 +125,7 @@ MinHeap<Type>& BinMinHeap<Type>::meld(const MinHeap<Type>& another_heap)
 {
     std::vector<Type> raw_vector;
     std::vector<Type> this_raw = this->get_raw();
-    std::vector<Type> another_raw = another_heap->get_raw();
+    std::vector<Type> another_raw = another_heap.get_raw();
     raw_vector.insert(raw_vector.begin(),
         this_raw.begin(), this_raw.end());
     raw_vector.insert(raw_vector.end(),
@@ -132,7 +133,7 @@ MinHeap<Type>& BinMinHeap<Type>::meld(const MinHeap<Type>& another_heap)
     BinMinHeap<Type>* temp_heap = heapify(raw_vector);
     this->array = temp_heap->array;
     this->n_element = temp_heap->n_element;
-    return MinHeap<Type>*(*this);
+    return *this;
 }
 
 #endif

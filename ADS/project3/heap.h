@@ -34,10 +34,10 @@ void swap(T &a, T &b) {
 //		- delete
 //		- percolate-up
 //		- percolate-down
+typedef enum {BIN_HEAP} HeapType;
 template<class Type>
 class MinHeap {
     public:
-		enum HeapType {BIN_HEAP};
         // Rule of three
         MinHeap() {n_element = 0;}
         MinHeap(const MinHeap<Type> &src) {n_element = src.n_element; return;}
@@ -94,7 +94,7 @@ class MinHeap {
 		// Heap type
 		virtual HeapType heap_type() = 0;
         // The get_raw method returns a vector of raw data.
-        virtual std::vector<Type> get_raw() = 0;
+        virtual std::vector<Type> get_raw() const = 0;
 		
     protected:
         // Number of the elements

@@ -1,4 +1,4 @@
-#include "original.h"
+#include "bin_heap.h"
 
 int main(void)
 {
