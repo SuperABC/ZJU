@@ -19,6 +19,7 @@ class BinMinHeap: public MinHeap<Type> {
         MinHeap<Type>& merge(const MinHeap<Type>&) const;
         MinHeap<Type>& meld(const MinHeap<Type>&);
         HeapType heap_type() {return BIN_HEAP;}
+        // Return a vector containing the data...
         std::vector<Type> get_raw() const;
         static BinMinHeap<Type>* heapify(const std::vector<Type>&);
     private:
@@ -153,6 +154,15 @@ MinHeap<Type>& BinMinHeap<Type>::meld(const MinHeap<Type>& another_heap)
     this->array = temp_heap->array;
     this->n_element = temp_heap->n_element;
     return *this;
+}
+
+template<class Type>
+std::vector<Type> BinMinHeap<Type>::get_raw() const
+{
+    std::vector<Type> *result = new std::vector<Type>;
+    if(!n_element) return *result;
+    result->insert(result->begin(), array.begin() + 1, array.end());
+    return *result;
 }
 
 #endif
