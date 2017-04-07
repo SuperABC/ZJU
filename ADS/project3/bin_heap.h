@@ -3,6 +3,12 @@
 
 #include "heap.h"
 
+#define TEST_HEAP
+
+#ifdef TEST_HEAP
+#include <iostream>
+#endif
+
 template<class Type>
 class BinMinHeap: public MinHeap<Type> {
     using MinHeap<Type>::n_element;
@@ -21,12 +27,23 @@ class BinMinHeap: public MinHeap<Type> {
         HeapType heap_type() {return BIN_HEAP;}
         // Return a vector containing the data...
         std::vector<Type> get_raw() const;
+        // Return a new instance constructed from the input vector
         static BinMinHeap<Type>* heapify(const std::vector<Type>&);
+#ifdef TEST_HEAP
+        // Member functions for test use
+        void print()
+        {
+            std::cout << this->size() << ": ";
+            for(unsigned i = 1; i <= this->size(); i++)
+                std::cout << array[i] << ", ";
+            std::cout << std::endl;
+        }
+#endif
     private:
         // Internal storage
         std::vector<Type> array;
-        bool percolate_up(unsigned);
-        bool percolate_down(unsigned);
+        void percolate_up(unsigned);
+        void percolate_down(unsigned);
         // inherited from the base class
         // unsigned n_element;
 };
@@ -87,34 +104,40 @@ Type& BinMinHeap<Type>::get_top()
 template<class Type>
 Type& BinMinHeap<Type>::push(const Type& element)
 {
-    unsigned len = array.size();
+    if(!n_element)
+    {
+        Type temp;
+        if(!array.size()) array.push_back(temp);
+        array.push_back(element);
+        n_element++;
+        return array[1];
+    }
+    unsigned len = ++n_element;
     array.push_back(element);
     percolate_up(len);
-    n_element++;
     return array[1];
 }
 
 template<class Type>
 Type& BinMinHeap<Type>::pop()
 {
-    if(this->size() == 1)
+    if(n_element == 1)
     {
         Type *temp = new Type(array[1]);
         array.pop_back();
         n_element--;
         return *temp;
     }
-    if(this->size() == 0)
+    if(n_element == 0)
     {
         Type *temp = new Type;
         return *temp;
     }
-    unsigned len = array.size();
+    unsigned len = n_element--;
     Type *result = new Type(array[1]);
     array[1] = array[len];
     array.pop_back();
     percolate_down(1);
-    n_element--;
     return *result;
 }
 
@@ -162,6 +185,54 @@ std::vector<Type> BinMinHeap<Type>::get_raw() const
     if(!n_element) return *result;
     result->insert(result->begin(), array.begin() + 1, array.end());
     return *result;
+}
+
+template<class Type>
+BinMinHeap<Type>* BinMinHeap<Type>::heapify(const std::vector<Type> &src)
+{
+    BinMinHeap<Type> *result = new BinMinHeap<Type>;
+    unsigned vec_size = src.size();
+    // Return empty constructed instance if input empty vector
+    if(!vec_size) return result;
+    result->n_element = vec_size;
+    // Push the 0th element
+    Type temp;
+    result->array.push_back(temp);
+    // Initialize the internal vector
+    result->array.insert(result->array.end(), src.begin(), src.end());
+    for(unsigned i = vec_size/2; i > 0; i--)
+        result->percolate_down(i);
+    return result;
+}
+
+template<class Type>
+void BinMinHeap<Type>::percolate_up(unsigned index)
+{
+    if(index > n_element) return;
+    for(unsigned i = index; array[i] < array[i/2]; i/=2)
+    {
+        if(i/2 <= 0) break;
+        swap<Type>(array[i], array[i/2]);
+    }
+    return;
+}
+
+template<class Type>
+void BinMinHeap<Type>::percolate_down(unsigned index)
+{
+    if(index > n_element) return;
+    unsigned this_size = this->size();
+    for(unsigned i = index, child; i * 2 <= this_size; i = child)
+    {
+        child = i * 2;
+        if(child < this_size && array[child+1] < array[child])
+            child++;
+        if(this_size < child) break;
+        if(array[i] > array[child])
+            swap<Type>(array[i], array[child]);
+        else break;
+    }
+    return;
 }
 
 #endif
