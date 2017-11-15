@@ -124,7 +124,7 @@ float ggx_G1_aniso(const glm::vec3& v, const float& ax, const float& ay) {
 	return 2 * v.z / (v.z + length(vv));
 }
 float ggx_brdf_aniso(const glm::vec3 &wi, const glm::vec3 &wo, const float ax, const float ay) {
-	assert(ax > 0 && ay > 0);
+	assert(ax >= 0 && ay >= 0);
 
 	if (wi.z <= 0 || wo.z <= 0)
 		return 0;
