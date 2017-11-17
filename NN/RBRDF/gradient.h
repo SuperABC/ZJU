@@ -5,10 +5,12 @@
 #include "glm/matrix.hpp"
 
 #define DELTA 0.0001f
-#define STEP .005f
+#define RATE .8f
 
 extern cam_coord_system Cam;
 extern light_system Light;
+
+float para[7] = { .5f, .5f, .5f, .5f, .5f, .5f, .5f };
 
 float clamp(float floor, float ceil, float d) {
 	if (d < floor)return floor;
@@ -22,44 +24,73 @@ float variant(std::vector<float> &v1, std::vector<float> &v2) {
 	}
 	return res;
 }
+float expand(std::vector<float> &tmp, std::vector<float> &pre, std::vector<float> &std) {
+	float res = 0.f;
+	for (int i = 0; i < LIGHT_SIZE; i++) {
+		res += (pre[i] - std[i])*(tmp[i] - pre[i]);
+	}
+	return res;
+}
 void gradient(std::vector<glm::vec3> wi, glm::vec3 wo, std::vector<float> brdf, float *res) {
-	float para[7] = { .1f, .4f, .1f, .2f, .1f, .1f, .1f };
 	float dn1, dn2, dt, dax, day, dpd, dps;
+	float odn1 = 0, odn2 = 0, odt = 0, odax = 0, oday = 0, odpd = 0, odps = 0;
+	float vn1 = 0, vn2 = 0, vt = 0, vax = 0, vay = 0, vpd = 0, vps = 0;
+	float ovn1 = 0, ovn2 = 0, ovt = 0, ovax = 0, ovay = 0, ovpd = 0, ovps = 0;
+	int pn1 = 0, pn2 = 0, pt = 0, pax = 0, pay = 0, ppd = 0, pps = 0;
 
-	std::vector<float> tmp;
-	float var, len;
+
+	float step = 0.001f;
+
+	std::vector<float> pre, tmp;
+	float var, min = INFINITE, round = 0, len;
 
 	while (1) {
-		light_brdf(1000, 1000, Cam, Light, para, tmp);
-		var = variant(tmp, brdf);
+		light_brdf(1000, 1000, Cam, Light, para, pre);
+		var = variant(pre, brdf);
+		if (var < min) {
+			min = var;
+			memcpy(res, para, 7 * sizeof(float));
+			round = 0;
+		}
+		else {
+			round++;
+			if (round > 1000)return;
+		}
 
 		para[0] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dn1 = (variant(tmp, brdf) - var) / DELTA;
+		if (dn1 == 0) dn1 = expand(tmp, pre, brdf) / DELTA;
 		para[0] -= DELTA;
 		para[1] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dn2 = (variant(tmp, brdf) - var) / DELTA;
+		if (dn2 == 0) dn2 = expand(tmp, pre, brdf) / DELTA;
 		para[1] -= DELTA;
 		para[2] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dt = (variant(tmp, brdf) - var) / DELTA;
+		if (dt == 0) dt = expand(tmp, pre, brdf) / DELTA;
 		para[2] -= DELTA;
 		para[3] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dax = (variant(tmp, brdf) - var) / DELTA;
+		if (dax == 0) dax = expand(tmp, pre, brdf) / DELTA;
 		para[3] -= DELTA;
 		para[4] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		day = (variant(tmp, brdf) - var) / DELTA;
+		if (day == 0) day = expand(tmp, pre, brdf) / DELTA;
 		para[4] -= DELTA;
 		para[5] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dpd = (variant(tmp, brdf) - var) / (DELTA * 20);
+		if (dpd == 0) dpd = expand(tmp, pre, brdf) / (DELTA * 20);
 		para[5] -= DELTA;
 		para[6] += DELTA;
 		light_brdf(1000, 1000, Cam, Light, para, tmp);
 		dps = (variant(tmp, brdf) - var) / DELTA;
+		if (dps == 0) dps = expand(tmp, pre, brdf) / DELTA;
 		para[6] -= DELTA;
 
 		if (para[0] == 0.f&&dn1 > 0)dn1 = 0;
@@ -77,6 +108,14 @@ void gradient(std::vector<glm::vec3> wi, glm::vec3 wo, std::vector<float> brdf, 
 		if (para[6] == 0.f&&dps > 0)dps = 0;
 		if (para[6] == 1.f&&dps < 0)dps = 0;
 
+		if (pn1)dn1 /= 1<<(pn1*6);
+		if (pn2)dn2 /= 1 << (pn2 * 6);
+		if (pt)dt /= 1 << (pt * 6);
+		if (pax)dax /= 1 << (pax * 6);
+		if (pay)day /= 1 << (pay * 6);
+		if (ppd)dpd /= 1 << (ppd * 6);
+		if (pps)dps /= 1 << (pps * 6);
+
 		len = sqrt(dn1*dn1 + dn2*dn2 + dt*dt + dax*dax + day*day + dpd*dpd + dps*dps);
 		if (len == 0)break;
 		dn1 /= len;
@@ -87,13 +126,51 @@ void gradient(std::vector<glm::vec3> wi, glm::vec3 wo, std::vector<float> brdf, 
 		dpd /= len;
 		dps /= len;
 
-		para[0] -= dn1 * STEP;
-		para[1] -= dn2 * STEP;
-		para[2] -= dt * STEP;
-		para[3] -= dax * STEP;
-		para[4] -= day * STEP;
-		para[5] -= dpd * STEP;
-		para[6] -= dps * STEP;
+		if (odn1 > 0.5&&dn1 < -0.5&&abs(odn1+dn1)<.01f&&var<5e-10)
+			pn1++;
+		if (odn2 > 0.5&&dn2 < -0.5&&abs(odn2 + dn2)<.01f && var<5e-10)
+			pn2++;
+		if (odt > 0.5&&dt < -0.5&&abs(odt + dt)<.01f && var<5e-10)
+			pt++;
+		if (odax > 0.5&&dax < -0.5&&abs(odax + dax)<.01f && var<5e-10)
+			pax++;
+		if (oday > 0.5&&day < -0.5&&abs(oday + day)<.01f && var<5e-10)
+			pay++;
+		if (odpd > 0.5&&dpd < -0.5&&abs(odpd + dpd)<.01f && var<5e-10)
+			ppd++;
+		if (odps > 0.5&&dps < -0.5&&abs(odps + dps)<.01f && var<5e-10)
+			pps++;
+
+		odn1 = dn1;
+		odn2 = dn2;
+		odt = dt;
+		odax = dax;
+		oday = day;
+		odpd = dpd;
+		odps = dps;
+		ovn1 = vn1;
+		ovn2 = vn2;
+		ovt = vt;
+		ovax = vax;
+		ovay = vay;
+		ovpd = vpd;
+		ovps = vps;
+
+		vn1 = RATE * vn1 - step * dn1;
+		vn2 = RATE * vn2 - step * dn2;
+		vt = RATE * vt - step * dt;
+		vax = RATE * vax - step * dax;
+		vay = RATE * vay - step * day;
+		vpd = RATE * vpd - step * dpd;
+		vps = RATE * vps - step * dps;
+
+		para[0] += vn1 + RATE * (vn1 - ovn1);
+		para[1] += vn2 + RATE * (vn2 - ovn2);
+		para[2] += vt + RATE * (vt - ovt);
+		para[3] += vax + RATE * (vax - ovax);
+		para[4] += vay + RATE * (vay - ovay);
+		para[5] += vpd + RATE * (vpd - ovpd);
+		para[6] += vps + RATE * (vps - ovps);
 		para[0] = clamp(0.f, 1.f, para[0]);
 		para[1] = clamp(0.f, 1.f, para[1]);
 		para[2] = clamp(0.f, 1.f, para[2]);
@@ -104,7 +181,17 @@ void gradient(std::vector<glm::vec3> wi, glm::vec3 wo, std::vector<float> brdf, 
 
 		std::cout << dn1 << " " << dn2 << " " << dt << " " << dax << " " << day << " " << dpd << " " << dps << std::endl <<
 			para[0] << " " << para[1] << " " << para[2] << " " << para[3] << " " << para[4] << " " << para[5] << " " << para[6] << std::endl <<
-			para[0] - .000f << " " << para[1] - .333f << " " << para[2] - .192f << " " << para[3] - .062f << " " << para[4] - .067f << " " << para[5] - .010f << " " << para[6] - .007f << std::endl <<
 			var << std::endl << std::endl;
+
+		if (var < 1e-12) {
+			if (step == 0.001f)
+				step = 0.0001f;
+		}
+		if (var < 1e-13) {
+			if (step == 0.0001f)
+				step = 0.00001f;
+		}
+		if (var < 1e-14)
+			break;
 	}
 }

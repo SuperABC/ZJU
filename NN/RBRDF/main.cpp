@@ -1,3 +1,4 @@
+#include <ctime>
 #include "camera.h"
 #include "light.h"
 #include "brdf.h"
@@ -36,10 +37,27 @@ int main() {
 
 	compute_wiwo(1000, 1000, Cam, Light, wi, wo);
 
-	light_brdf(1000, 1000, Cam, Light, para_value[0].get_para(), para_value[0].get_brdf());
 	std::vector<para_brdf> para_res(size);
-	for (int i = 0; i < size; i++) {
+	for (int i = 800; i < size; i++) {
+		clock_t t = clock();
 		gradient(wi, wo, para_value[i].get_brdf(), para_res[i].get_para());
+		std::cout << clock() - t << std::endl;
+		std::cout << para_value[i].get_para()[0] << " " << 
+			para_value[i].get_para()[1] << " " <<
+			para_value[i].get_para()[2] << " " <<
+			para_value[i].get_para()[3] << " " <<
+			para_value[i].get_para()[4] << " " <<
+			para_value[i].get_para()[5] << " " <<
+			para_value[i].get_para()[6] << std::endl <<
+			para_value[i].get_para()[0] - para_res[i].get_para()[0] << " " <<
+			para_value[i].get_para()[1] - para_res[i].get_para()[1] << " " <<
+			para_value[i].get_para()[2] - para_res[i].get_para()[2] << " " <<
+			para_value[i].get_para()[3] - para_res[i].get_para()[3] << " " <<
+			para_value[i].get_para()[4] - para_res[i].get_para()[4] << " " <<
+			para_value[i].get_para()[5] - para_res[i].get_para()[5] << " " <<
+			para_value[i].get_para()[6] - para_res[i].get_para()[6] << std::endl << std::endl;
+
+		system("pause");
 	}
 
 	return 0;
