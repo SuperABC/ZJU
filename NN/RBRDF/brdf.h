@@ -169,6 +169,8 @@ void light_brdf(const int u, const int v,
 	std::vector<glm::vec3> wi(LIGHT_SIZE);
 	glm::vec3 b(glm::cross(n, t)), wo(glm::dot(dirc, t), glm::dot(dirc, b), glm::dot(dirc, n));
 	wo = normalize(wo);
+
+#pragma omp parallel for
 	for (int i = 0; i < LIGHT_SIZE; i++) {
 		glm::vec3 lp, ln, lt;
 		light.get_light(lp, ln, lt, i);
