@@ -22,7 +22,7 @@ int main() {
 	read_cam_and_light("cam_and_light.txt", Cam, Light);
 
 	FILE *fp;
-	fopen_s(&fp, "tmp.txt", "rb+");
+	fopen_s(&fp, "test.txt", "rb+");
 
 	int size;
 	fread(&size, sizeof(int), 1, fp);
@@ -35,12 +35,14 @@ int main() {
 	std::vector<glm::vec3>wi;
 	glm::vec3 wo;
 
-	compute_wiwo(1000, 1000, Cam, Light, wi, wo);
+	compute_wiwo(1386, 1096, Cam, Light, wi, wo);
 
 	std::vector<para_brdf> para_res(size);
-	for (int i = 800; i < size; i++) {
+	for (int i = 0; i < size; i++) {
 		clock_t t = clock();
-		gradient(wi, wo, para_value[i].get_brdf(), para_res[i].get_para());
+		if (gradient(wi, wo, para_value[i].get_brdf(), para_res[i].get_para())) {
+			while (gradient(wi, wo, para_value[i].get_brdf(), para_res[i].get_para(), true));
+		}
 		std::cout << clock() - t << std::endl;
 		std::cout << para_value[i].get_para()[0] << " " << 
 			para_value[i].get_para()[1] << " " <<
@@ -57,7 +59,7 @@ int main() {
 			para_value[i].get_para()[5] - para_res[i].get_para()[5] << " " <<
 			para_value[i].get_para()[6] - para_res[i].get_para()[6] << std::endl << std::endl;
 
-		system("pause");
+		//system("pause");
 	}
 
 	return 0;
