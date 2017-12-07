@@ -7,6 +7,8 @@
 #define LIGHT_SIZE 10240
 #define PI 3.1415926535
 
+#define DEBUG
+
 glm::vec3 normalize(glm::vec3 v);
 float length(glm::vec3 v);
 
@@ -85,7 +87,7 @@ void compute_wiwo(const int u, const int v,
 	}
 }
 
-void dimention_map(glm::vec3 &result, glm::vec2 &dir) {
+inline void dimention_map(glm::vec3 &result, glm::vec2 &dir) {
 	glm::vec2 p = (dir - glm::vec2(0.5f, 0.5f));
 	p *= 2;
 
@@ -94,7 +96,7 @@ void dimention_map(glm::vec3 &result, glm::vec2 &dir) {
 	result.z = 1 - abs(result.x) - abs(result.y);
 	result = normalize(result);
 }
-void build_frame_f(const glm::vec3& n, glm::vec3& t, glm::vec3& b) {
+inline void build_frame_f(const glm::vec3& n, glm::vec3& t, glm::vec3& b) {
 	if (n.z != 1 && n.z != -1)
 		t = glm::vec3(0, 0, 1);
 	else
@@ -103,20 +105,21 @@ void build_frame_f(const glm::vec3& n, glm::vec3& t, glm::vec3& b) {
 	b = normalize(b);
 	t = glm::cross(b, n);
 }
-void sample_T(const glm::vec3& n, const float rotate, glm::vec3& t) {
+inline void sample_T(const glm::vec3& n, const float rotate, glm::vec3& t) {
 	glm::vec3 tangent, binormal;
 	build_frame_f(n, tangent, binormal);
 	t = (tangent *= cos(rotate * PI / 2)) + (binormal *= sin(rotate * PI / 2));
 	t = normalize(t);
 }
-float form_factor(const glm::vec3& p, const glm::vec3& n,
+inline float form_factor(const glm::vec3& p, const glm::vec3& n,
 	const glm::vec3& lp, const glm::vec3& ln) {
 	glm::vec3 ldir = lp - p;
 	float dist = length(ldir);
 	ldir = normalize(ldir);
-	return __max(glm::dot(ldir, n), 0.f)*__max(glm::dot(-ldir, ln), 0.f) / (dist*dist);
+	//return __max(glm::dot(ldir, n), 0.f)*__max(glm::dot(-ldir, ln), 0.f) / (dist*dist);
+	return __max(glm::dot(ldir, n), 0);
 }
-float ggx_G1_aniso(const glm::vec3& v, const float& ax, const float& ay) {
+inline float ggx_G1_aniso(const glm::vec3& v, const float& ax, const float& ay) {
 	if (v.z <= 0)
 		return 0;
 
@@ -164,9 +167,8 @@ void light_brdf(const int u, const int v,
 	dimention_map(n, glm::vec2(params[0], params[1]));
 	sample_T(n, params[2], t);
 
-	brdf.clear();
 	brdf.resize(LIGHT_SIZE, 0);
-	std::vector<glm::vec3> wi(LIGHT_SIZE);
+	static std::vector<glm::vec3> wi(LIGHT_SIZE);
 	glm::vec3 b(glm::cross(n, t)), wo(glm::dot(dirc, t), glm::dot(dirc, b), glm::dot(dirc, n));
 	wo = normalize(wo);
 
@@ -180,7 +182,9 @@ void light_brdf(const int u, const int v,
 		wi[i] = glm::vec3(glm::dot(wi[i], t), glm::dot(wi[i], b), glm::dot(wi[i], n));
 
 		float factor = form_factor(pos, n, lp, ln);
-		brdf[i] = factor * params[5] +
+		//brdf[i] = factor * params[5] +
+		//	ggx_brdf_aniso(wi[i], wo, params[3], params[4]) * factor * params[6];
+		brdf[i] = factor / PI * params[5] +
 			ggx_brdf_aniso(wi[i], wo, params[3], params[4]) * factor * params[6];
 	}
 }
