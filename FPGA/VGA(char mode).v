@@ -11,7 +11,7 @@
 module VGA (
 	input clk, //Clock cycle must be 25mhz.
 	input rst, //VGA reset at positive edge of rst.
-	input [19:0] d_in, //Values rrrr_gggg_bbbb_ascii, the color and ascii of the current character.
+	input [31:0] d_in, //Values rrrr_gggg_bbbb_ascii, the color and ascii of the current character.
 	
 	output reg [3:0] r, //The VGA red channel.
 	output reg [3:0] g, //The VGA green channel.
@@ -83,8 +83,8 @@ module VGA (
 		3'h7:show_bit <= font_out[0];
 		endcase
 		
-		r <= rdn ? 4'h0 : (show_bit ? d_in[19:16] : 4'b0000); // 4-bit red
-		g <= rdn ? 4'h0 : (show_bit ? d_in[15:12] : 4'b0000); // 4-bit green
-		b <= rdn ? 4'h0 : (show_bit ? d_in[11:8] : 4'b0000); // 4-bit blue
+		r <= rdn ? 4'h0 : (show_bit ? d_in[31:28] : d_in[19:16]); // 4-bit red
+		g <= rdn ? 4'h0 : (show_bit ? d_in[27:24] : d_in[15:12]); // 4-bit green
+		b <= rdn ? 4'h0 : (show_bit ? d_in[23:20] : d_in[11:8]); // 4-bit blue
 	end
 endmodule
