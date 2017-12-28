@@ -12,7 +12,7 @@ public class Main extends JFrame {
 	public static void main(String[] args) {
 	    EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				frame = new Table();
+				frame = new Table(0);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	            frame.setTitle("CS Killer");
 				frame.setVisible(true);
