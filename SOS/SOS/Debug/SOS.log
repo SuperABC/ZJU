@@ -1,0 +1,14 @@
+﻿  terminal.c
+c:\users\mlkj\documents\visual studio 2017\projects\sos\sos\terminal.c(101): warning C4244: “函数”: 从“short”转换到“char”，可能丢失数据
+c:\users\mlkj\documents\visual studio 2017\projects\sos\sos\terminal.c(110): warning C4018: “<”: 有符号/无符号不匹配
+  setting.c
+  monitor.c
+  main.c
+  login.c
+  folder.c
+  desktop.c
+  正在生成代码...
+winsgld.lib(widget.obj) : warning LNK4099: 未找到 PDB“SGL.pdb”(使用“winsgld.lib(widget.obj)”或在“C:\Users\MLKJ\Documents\Visual Studio 2017\Projects\SOS\Debug\SGL.pdb”中寻找)；正在链接对象，如同没有调试信息一样
+winsgld.lib(winsgl.obj) : warning LNK4099: 未找到 PDB“SGL.pdb”(使用“winsgld.lib(winsgl.obj)”或在“C:\Users\MLKJ\Documents\Visual Studio 2017\Projects\SOS\Debug\SGL.pdb”中寻找)；正在链接对象，如同没有调试信息一样
+  SOS.vcxproj -> C:\Users\MLKJ\Documents\Visual Studio 2017\Projects\SOS\Debug\SOS.exe
+  SOS.vcxproj -> C:\Users\MLKJ\Documents\Visual Studio 2017\Projects\SOS\Debug\SOS.pdb (Partial PDB)
